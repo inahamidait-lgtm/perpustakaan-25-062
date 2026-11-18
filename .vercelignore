@@ -2,5 +2,6 @@
 .git
 .github
 node_modules
+vendor
 tests
 .phpunit.cache
