@@ -8,15 +8,24 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->timestamps();
-        });
+        if (!Schema::hasColumn('users', 'created_at') ||
+            !Schema::hasColumn('users', 'updated_at')) {
+
+            Schema::table('users', function (Blueprint $table) {
+                if (!Schema::hasColumn('users', 'created_at')) {
+                    $table->timestamp('created_at')->nullable();
+                }
+
+                if (!Schema::hasColumn('users', 'updated_at')) {
+                    $table->timestamp('updated_at')->nullable();
+                }
+            });
+        }
     }
 
     public function down(): void
     {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropTimestamps();
-        });
+        // Tidak menghapus timestamps karena bisa berasal
+        // dari migrasi awal tabel users.
     }
 };

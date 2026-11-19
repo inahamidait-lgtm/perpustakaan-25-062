@@ -41,7 +41,7 @@ class BukuController
                     'gambar' => $gambar[$index % count($gambar)],
                 ];
             });
-
+//A1 XSS
         return view('buku.index', compact(
             'daftarBuku',
             'search',
@@ -69,7 +69,7 @@ class BukuController
         return view('buku.detail', compact('buku'));
     }
 
-    // Memperbaiki celah SQL Injection
+    // A2 Memperbaiki celah SQL Injection
     public function cari(Request $request)
     {
     $judul = $request->query('judul');

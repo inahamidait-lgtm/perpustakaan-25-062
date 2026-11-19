@@ -9,6 +9,10 @@ class KategoriSeeder extends Seeder
 {
     public function run(): void
     {
-        Kategori::factory()->count(3)->create();
+        Kategori::insert([
+            ['nama' => 'Fiksi'],
+            ['nama' => 'Non Fiksi'],
+            ['nama' => 'Pendidikan'],
+        ]);
     }
 }

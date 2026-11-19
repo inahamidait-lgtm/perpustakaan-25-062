@@ -5,14 +5,9 @@
 @section('content')
 
 @php
+    $bolehKelolaBuku = auth()->user()->can('kelola data buku');
     $bolehPinjamBuku = auth()->user()->can('mengajukan peminjaman buku');
 @endphp
-
-@can('kelola-buku')
-    @php $bolehKelolaBuku = true; @endphp
-@else
-    @php $bolehKelolaBuku = false; @endphp
-@endcan
 
 <style>
     .buku-container {
@@ -225,7 +220,7 @@
     </div>
 
     <!-- Form Tambah dan Ubah Buku untuk Admin/Petugas -->
-    @can('kelola-buku')
+    @if ($bolehKelolaBuku)
         <div class="form-card">
 
             <h2 id="judul-form">Tambah Buku</h2>
@@ -286,7 +281,7 @@
                 </div>
             </form>
         </div>
-    @endcan
+    @endif
 
     <!-- Pesan Berhasil atau Gagal -->
     <div id="pesan" class="pesan"></div>
@@ -339,12 +334,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
     const api = '/api/buku';
 
-    @can('kelola-buku')
-    const bolehKelolaBuku = true;
-    @else
-    const bolehKelolaBuku = false;
-    @endcan
-
+    const bolehKelolaBuku = @json($bolehKelolaBuku);
     const bolehPinjamBuku = @json($bolehPinjamBuku);
 
     const tabel = document.getElementById('daftar-buku');
@@ -646,8 +636,8 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
 
             const hasil = await permintaan(
-             `/buku/${buku.id}`,
-            { method: 'DELETE' }
+                `${api}/${buku.id}`,
+                { method: 'DELETE' }
             );
 
             await muatBuku();

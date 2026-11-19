@@ -10,7 +10,7 @@ class StoreBukuRequest extends FormRequest
     {
         return true;
     }
-
+// A2
     public function rules(): array
     {
         return [

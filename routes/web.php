@@ -28,7 +28,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Route pengujian SQL Injection
     Route::get('/buku-cari', [WebBukuController::class, 'cari']);
 
-    // ==========================
+    Route::get('/', function () {
+    return view('home');
+    })->name('home');
+
+// ==========================
 // ROUTE KELOLA BUKU (GATE)
 // ==========================
 
@@ -247,4 +251,3 @@ Route::post('/buku', [BukuCrudController::class, 'store'])
 });
 
 require __DIR__.'/auth.php';
-

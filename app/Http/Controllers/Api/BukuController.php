@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 
 class BukuController extends Controller
 {
+// A2 
     public function index(Request $request)
     {
         $query = Buku::with('kategori')
