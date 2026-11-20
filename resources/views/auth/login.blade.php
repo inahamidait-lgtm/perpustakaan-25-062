@@ -1,8 +1,18 @@
 <x-guest-layout>
+    <div class="mb-4 text-center">
+        <h2 class="text-xl font-bold text-gray-800">
+            Login Pustaka Kita
+        </h2>
+        <p class="text-sm text-gray-600">
+            NIM: 250441100062
+        </p>
+    </div>
+
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 
     <form method="POST" action="{{ route('login') }}">
+
         @csrf
 
         <!-- Email Address -->
