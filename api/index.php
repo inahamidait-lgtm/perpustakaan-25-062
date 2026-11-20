@@ -4,10 +4,8 @@ use Illuminate\Http\Request;
 
 define('LARAVEL_START', microtime(true));
 
-// Force SCRIPT_NAME to /index.php so routing & redirects work properly on Vercel
 $_SERVER['SCRIPT_NAME'] = '/index.php';
 
-// Ensure /tmp directories exist for Vercel's read-only serverless environment
 $tmpDirs = [
     '/tmp/views',
     '/tmp/storage/framework/views',
