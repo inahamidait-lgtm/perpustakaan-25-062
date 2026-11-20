@@ -34,6 +34,7 @@ class BukuController
 
                 return [
                     'id' => $buku->id,
+                    'kategori_id' => $buku->kategori_id,
                     'judul' => $buku->judul,
                     'penulis' => $buku->penulis,
                     'tanggal_terbit' => $buku->tahun_terbit,
