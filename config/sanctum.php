@@ -19,11 +19,11 @@ return [
     */
 
     'stateful' => array_filter(explode(',', env(
-    'SANCTUM_STATEFUL_DOMAINS',
-    'localhost,localhost:3000,127.0.0.1,127.0.0.1:8000,pustaka-kita-utm.vercel.app'
-    . Sanctum::currentApplicationUrlWithPort()
-    . Sanctum::currentRequestHost()
-))),
+        'SANCTUM_STATEFUL_DOMAINS',
+        'localhost,localhost:3000,127.0.0.1,127.0.0.1:8000,pustaka-kita-utm.vercel.app'
+        . Sanctum::currentApplicationUrlWithPort()
+        . Sanctum::currentRequestHost()
+    ))),
 
     /*
     |--------------------------------------------------------------------------

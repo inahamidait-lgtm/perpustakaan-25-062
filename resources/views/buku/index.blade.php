@@ -3,6 +3,7 @@
 @section('title', 'Daftar Buku - Pustaka Kita')
 
 @section('content')
+
 @php
     $bolehKelolaBuku = auth()->user()->can('kelola data buku');
     $bolehPinjamBuku = auth()->user()->can('mengajukan peminjaman buku');
@@ -211,203 +212,486 @@
 </style>
 
 <div class="buku-container">
-    <div style="background:linear-gradient(135deg,#2f6090,#3b78ad);color:white;padding:28px;border-radius:15px;margin-bottom:25px;">
-        <h2 style="margin:0 0 8px;color:white;">Data Buku</h2>
-        <p style="margin:0;">Berikut adalah daftar buku yang ingin kamu pinjam.</p>
+
+    <!-- Banner Daftar Buku -->
+    <div style="background: linear-gradient(135deg, #2f6090, #3b78ad); color: white; padding: 28px; border-radius: 15px; margin-bottom: 25px;">
+        <h2 style="margin: 0 0 8px; color: white;">Data Buku</h2>
+        <p style="margin: 0;">Berikut adalah daftar buku yang ingin kamu pinjam.</p>
     </div>
 
-    @if (session('success'))
-        <div class="pesan berhasil">{{ session('success') }}</div>
-    @endif
-    @if (session('error'))
-        <div class="pesan gagal">{{ session('error') }}</div>
-    @endif
-    @if ($errors->any())
-        <div class="pesan gagal">
-            @foreach ($errors->all() as $error)
-                <div>{{ $error }}</div>
-            @endforeach
-        </div>
-    @endif
-    <div id="pesan" class="pesan" style="display:none;" role="status" aria-live="polite"></div>
-
+    <!-- Form Tambah dan Ubah Buku untuk Admin/Petugas -->
     @if ($bolehKelolaBuku)
-        <div class="form-card" id="form-card-buku">
+        <div class="form-card">
+
             <h2 id="judul-form">Tambah Buku</h2>
-            {{-- Menggunakan route WEB Laravel; tidak menggunakan /api/buku. --}}
-            <form id="form-buku" method="POST" action="{{ url('/buku') }}">
+
+            <form id="form-buku">
                 @csrf
-                <input type="hidden" name="_method" id="metode-form" value="POST" disabled>
+
+                <input type="hidden" id="buku_id">
+
                 <div class="form-grid">
+
                     <div class="form-group">
                         <label for="kategori_id">Kategori Buku</label>
-                        <select id="kategori_id" name="kategori_id" required>
+
+                        <select id="kategori_id" required>
                             <option value="">Pilih kategori</option>
+
                             @foreach ($kategoris as $kategori)
-                                <option value="{{ $kategori->id }}" @selected(old('kategori_id') == $kategori->id)>{{ $kategori->nama }}</option>
+                                <option value="{{ $kategori->id }}">
+                                    {{ $kategori->nama }}
+                                </option>
                             @endforeach
                         </select>
                     </div>
+
                     <div class="form-group">
                         <label for="judul">Judul Buku</label>
-                        <input id="judul" name="judul" type="text" value="{{ old('judul') }}" placeholder="Masukkan judul buku" maxlength="255" required>
+                        <input type="text" id="judul"
+                            placeholder="Masukkan judul buku" required>
                     </div>
+
                     <div class="form-group">
                         <label for="penulis">Penulis</label>
-                        <input id="penulis" name="penulis" type="text" value="{{ old('penulis') }}" placeholder="Masukkan nama penulis" maxlength="255" required>
+                        <input type="text" id="penulis"
+                            placeholder="Masukkan nama penulis" required>
                     </div>
+
                     <div class="form-group">
                         <label for="tahun_terbit">Tahun Terbit</label>
-                        <input id="tahun_terbit" name="tahun_terbit" type="number" min="1000" max="{{ date('Y') }}" value="{{ old('tahun_terbit') }}" placeholder="Contoh: 2024" required>
+                        <input type="number" id="tahun_terbit"
+                            placeholder="Contoh: 2024" required>
                     </div>
+
                 </div>
+
                 <div class="form-actions">
-                    <button type="submit" id="tombol-simpan" class="btn btn-simpan">Simpan Buku</button>
-                    <button type="button" id="tombol-batal" class="btn btn-batal" hidden>Batal</button>
+
+                    <button type="submit" id="tombol-simpan"
+                        class="btn btn-simpan">
+                        Simpan Buku
+                    </button>
+
+                    <button type="button" id="tombol-batal"
+                        class="btn btn-batal" hidden>
+                        Batal
+                    </button>
+
                 </div>
             </form>
         </div>
     @endif
 
+    <!-- Pesan Berhasil atau Gagal -->
+    <div id="pesan" class="pesan"></div>
+
+    <!-- Tabel Daftar Buku -->
     <div class="table-card">
+
         <div class="table-heading">
             <h2>Koleksi Buku</h2>
-            <span class="total-buku" id="jumlah-buku">Total buku: {{ $daftarBuku->count() }}</span>
+
+            <span class="total-buku" id="jumlah-buku">
+                Memuat data...
+            </span>
         </div>
+
         <div class="table-wrapper">
+
             <table class="tabel-buku">
-                <thead><tr>
-                    <th>No</th><th>Kategori</th><th>Judul Buku</th><th>Penulis</th><th>Tahun Terbit</th>
-                    @if ($bolehKelolaBuku || $bolehPinjamBuku)<th>Aksi</th>@endif
-                </tr></thead>
-                <tbody id="daftar-buku">
-                @forelse ($daftarBuku as $index => $buku)
+
+                <thead>
                     <tr>
-                        <td>{{ $index + 1 }}</td>
-                        <td>{{ $buku['kategori'] }}</td>
-                        <td>{{ $buku['judul'] }}</td>
-                        <td>{{ $buku['penulis'] }}</td>
-                        <td>{{ $buku['tanggal_terbit'] }}</td>
+                        <th>No</th>
+                        <th>Kategori</th>
+                        <th>Judul Buku</th>
+                        <th>Penulis</th>
+                        <th>Tahun Terbit</th>
+
                         @if ($bolehKelolaBuku || $bolehPinjamBuku)
-                            <td>
-                                @if ($bolehKelolaBuku)
-                                    <button type="button" class="btn btn-ubah js-edit"
-                                        data-id="{{ $buku['id'] }}"
-                                        data-kategori-id="{{ $buku['kategori_id'] }}"
-                                        data-judul="{{ $buku['judul'] }}"
-                                        data-penulis="{{ $buku['penulis'] }}"
-                                        data-tahun="{{ $buku['tanggal_terbit'] }}">Ubah</button>
-                                    <form class="aksi-form js-hapus" method="POST" action="{{ url('/buku/'.$buku['id']) }}">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-hapus">Hapus</button>
-                                    </form>
-                                @endif
-                                @if ($bolehPinjamBuku)
-                                    <button type="button" class="btn btn-pinjam js-pinjam"
-                                        data-id="{{ $buku['id'] }}" data-judul="{{ $buku['judul'] }}">Pinjam Buku</button>
-                                @endif
-                            </td>
+                            <th>Aksi</th>
                         @endif
                     </tr>
-                @empty
-                    <tr><td colspan="{{ ($bolehKelolaBuku || $bolehPinjamBuku) ? 6 : 5 }}" style="text-align:center;">Belum ada data buku.</td></tr>
-                @endforelse
+                </thead>
+
+                <tbody id="daftar-buku">
+                    <tr>
+                        <td colspan="{{ ($bolehKelolaBuku || $bolehPinjamBuku) ? 6 : 5 }}">
+                            Memuat data buku...
+                        </td>
+                    </tr>
                 </tbody>
+
             </table>
         </div>
     </div>
+
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    // Data tabel sudah di-render Blade. Tidak ada fetch('/api/buku').
+document.addEventListener('DOMContentLoaded', function () {
+
+    const api = '/api/buku';
+
+    const bolehKelolaBuku = @json($bolehKelolaBuku);
+    const bolehPinjamBuku = @json($bolehPinjamBuku);
+
+    const tabel = document.getElementById('daftar-buku');
     const pesan = document.getElementById('pesan');
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
-    const baseBukuUrl = @json(url('/buku'));
+    const jumlahBuku = document.getElementById('jumlah-buku');
 
-    function tampilkanPesan(teks, berhasil = false) {
-        if (!pesan) return;
-        pesan.textContent = teks;
-        pesan.className = 'pesan ' + (berhasil ? 'berhasil' : 'gagal');
-        pesan.style.display = 'block';
-    }
+    let daftarBuku = [];
 
-    // Edit dan tambah buku memakai route WEB (POST /buku, PUT /buku/{id}).
     const form = document.getElementById('form-buku');
-    const metode = document.getElementById('metode-form');
-    const tombolBatal = document.getElementById('tombol-batal');
+    const idInput = document.getElementById('buku_id');
+
     const judulForm = document.getElementById('judul-form');
     const tombolSimpan = document.getElementById('tombol-simpan');
+    const tombolBatal = document.getElementById('tombol-batal');
 
-    function resetForm() {
-        if (!form) return;
-        form.reset();
-        form.action = baseBukuUrl;
-        if (metode) {
-            metode.value = 'POST';
-            metode.disabled = true;
-        }
-        if (judulForm) judulForm.textContent = 'Tambah Buku';
-        if (tombolSimpan) tombolSimpan.textContent = 'Simpan Buku';
-        if (tombolBatal) tombolBatal.hidden = true;
+    function tampilkanPesan(teks, berhasil = false) {
+        pesan.textContent = teks;
+        pesan.className = 'pesan ' + (berhasil ? 'berhasil' : 'gagal');
     }
 
-    document.querySelectorAll('.js-edit').forEach(button => {
-        button.addEventListener('click', () => {
-            if (!form || !metode) return;
-            document.getElementById('kategori_id').value = button.dataset.kategoriId || '';
-            document.getElementById('judul').value = button.dataset.judul || '';
-            document.getElementById('penulis').value = button.dataset.penulis || '';
-            document.getElementById('tahun_terbit').value = button.dataset.tahun || '';
-            form.action = baseBukuUrl + '/' + encodeURIComponent(button.dataset.id);
-            metode.value = 'PUT';
-            metode.disabled = false;
-            if (judulForm) judulForm.textContent = 'Ubah Buku';
-            if (tombolSimpan) tombolSimpan.textContent = 'Simpan Perubahan';
-            if (tombolBatal) tombolBatal.hidden = false;
-            document.getElementById('form-card-buku')?.scrollIntoView({ behavior: 'smooth' });
-        });
-    });
+    function ambilTokenCSRF() {
+        const cookie = document.cookie
+            .split('; ')
+            .find(row => row.startsWith('XSRF-TOKEN='));
 
-    tombolBatal?.addEventListener('click', resetForm);
+        return cookie
+            ? decodeURIComponent(cookie.split('=').slice(1).join('='))
+            : null;
+    }
 
-    document.querySelectorAll('.js-hapus').forEach(formHapus => {
-        formHapus.addEventListener('submit', event => {
-            if (!confirm('Yakin ingin menghapus buku ini?')) event.preventDefault();
-        });
-    });
+    async function permintaan(url, opsi = {}) {
 
-    // Pengajuan peminjaman tetap memakai route WEB /siswa/peminjaman.
-    // Tidak memanggil API buku ataupun memuat ulang tabel melalui AJAX.
-    document.querySelectorAll('.js-pinjam').forEach(button => {
-        button.addEventListener('click', async () => {
-            if (!confirm('Ajukan peminjaman buku "' + button.dataset.judul + '"?')) return;
-            button.disabled = true;
-            try {
-                const response = await fetch(@json(url('/siswa/peminjaman')), {
-                    method: 'POST',
-                    credentials: 'same-origin',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': csrfToken || ''
-                    },
-                    body: JSON.stringify({ buku_id: Number(button.dataset.id) })
-                });
-                const data = await response.json().catch(() => ({}));
-                if (!response.ok) {
-                    const detail = data.errors ? Object.values(data.errors).flat().join(' ') : '';
-                    throw new Error(detail || data.message || 'Gagal mengajukan peminjaman (' + response.status + ').');
-                }
-                tampilkanPesan(data.message || 'Pengajuan peminjaman berhasil.', true);
-            } catch (error) {
-                tampilkanPesan(error.message || 'Terjadi kesalahan saat mengajukan peminjaman.');
-            } finally {
-                button.disabled = false;
+        const tokenCSRF = ambilTokenCSRF();
+
+        const response = await fetch(url, {
+            ...opsi,
+            credentials: 'same-origin',
+
+            headers: {
+                'Accept': 'application/json',
+
+                ...(opsi.body
+                    ? { 'Content-Type': 'application/json' }
+                    : {}),
+
+                ...(tokenCSRF
+                    ? { 'X-XSRF-TOKEN': tokenCSRF }
+                    : {}),
+
+                ...opsi.headers
             }
         });
-    });
+
+        const hasil = await response.json().catch(() => ({}));
+
+        if (!response.ok) {
+
+            const detailValidasi = hasil.errors
+                ? Object.values(hasil.errors).flat().join(' ')
+                : '';
+
+            throw new Error(
+                detailValidasi ||
+                hasil.message ||
+                `Permintaan gagal (${response.status}).`
+            );
+        }
+
+        return hasil;
+    }
+
+    function buatSel(baris, nilai) {
+        const sel = document.createElement('td');
+        sel.textContent = nilai ?? '-';
+        baris.appendChild(sel);
+        return sel;
+    }
+
+    function judulBuku(buku) {
+        return buku.judul ?? buku.judul_buku ?? '-';
+    }
+
+    // Mengambil data buku dari API
+    async function muatBuku() {
+
+        try {
+
+            const hasil = await permintaan(api);
+
+            daftarBuku = hasil.data || [];
+
+            tabel.replaceChildren();
+
+            if (daftarBuku.length === 0) {
+
+                const baris = document.createElement('tr');
+
+                const sel = buatSel(baris, 'Belum ada data buku.');
+
+                sel.colSpan = (bolehKelolaBuku || bolehPinjamBuku) ? 6 : 5;
+
+                tabel.appendChild(baris);
+            }
+
+            daftarBuku.forEach((buku, index) => {
+
+                const baris = document.createElement('tr');
+
+                buatSel(baris, index + 1);
+                buatSel(baris, buku.kategori);
+                buatSel(baris, judulBuku(buku));
+                buatSel(baris, buku.penulis);
+                buatSel(baris, buku.tahun_terbit);
+
+                // Tombol Aksi
+                if (bolehKelolaBuku || bolehPinjamBuku) {
+
+                    const aksi = document.createElement('td');
+
+                    // Tombol Ubah dan Hapus untuk Admin/Petugas
+                    if (bolehKelolaBuku) {
+
+                        const ubah = document.createElement('button');
+
+                        ubah.textContent = 'Ubah';
+                        ubah.type = 'button';
+                        ubah.className = 'btn btn-ubah';
+
+                        ubah.addEventListener('click', () => isiForm(buku));
+
+                        const hapus = document.createElement('button');
+
+                        hapus.textContent = 'Hapus';
+                        hapus.type = 'button';
+                        hapus.className = 'btn btn-hapus';
+
+                        hapus.addEventListener('click', () => hapusBuku(buku));
+
+                        aksi.append(ubah, hapus);
+                    }
+
+                    // Tombol Pinjam Buku untuk Siswa
+                    if (bolehPinjamBuku) {
+
+                        const pinjam = document.createElement('button');
+
+                        pinjam.textContent = 'Pinjam Buku';
+                        pinjam.type = 'button';
+                        pinjam.className = 'btn btn-pinjam';
+
+                        pinjam.addEventListener('click', () => ajukanPeminjaman(buku));
+
+                        aksi.appendChild(pinjam);
+                    }
+
+                    baris.appendChild(aksi);
+                }
+
+                tabel.appendChild(baris);
+            });
+
+            jumlahBuku.textContent =
+                `Total buku: ${daftarBuku.length}`;
+
+        } catch (error) {
+
+            tabel.replaceChildren();
+
+            const baris = document.createElement('tr');
+
+            const sel = buatSel(baris, error.message);
+
+            sel.colSpan = (bolehKelolaBuku || bolehPinjamBuku) ? 6 : 5;
+
+            tabel.appendChild(baris);
+
+            jumlahBuku.textContent = 'Gagal memuat data';
+
+            tampilkanPesan('Gagal mengambil data: ' + error.message);
+        }
+    }
+
+    // Mengisi form ketika tombol Ubah diklik
+    function isiForm(buku) {
+
+        idInput.value = buku.id;
+
+        document.getElementById('kategori_id').value =
+            buku.kategori_id ?? '';
+
+        document.getElementById('judul').value =
+            judulBuku(buku) === '-' ? '' : judulBuku(buku);
+
+        document.getElementById('penulis').value =
+            buku.penulis ?? '';
+
+        document.getElementById('tahun_terbit').value =
+            buku.tahun_terbit ?? '';
+
+        judulForm.textContent = 'Ubah Buku';
+
+        tombolSimpan.textContent = 'Simpan Perubahan';
+
+        tombolBatal.hidden = false;
+
+        tampilkanPesan('Data buku dipilih untuk diubah.', true);
+
+        form.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    // Mengosongkan form
+    function resetForm() {
+
+        form.reset();
+
+        idInput.value = '';
+
+        judulForm.textContent = 'Tambah Buku';
+
+        tombolSimpan.textContent = 'Simpan Buku';
+
+        tombolBatal.hidden = true;
+    }
+
+    // Tambah dan Ubah Buku untuk Admin/Petugas
+    if (bolehKelolaBuku) {
+
+        tombolBatal.addEventListener('click', () => {
+
+            resetForm();
+
+            tampilkanPesan('Perubahan dibatalkan.', true);
+        });
+
+        form.addEventListener('submit', async (event) => {
+
+            event.preventDefault();
+
+            tombolSimpan.disabled = true;
+
+            const id = idInput.value;
+
+            const data = {
+
+                kategori_id: Number(
+                    document.getElementById('kategori_id').value
+                ),
+
+                judul: document.getElementById('judul').value.trim(),
+
+                penulis: document.getElementById('penulis').value.trim(),
+
+                tahun_terbit: Number(
+                    document.getElementById('tahun_terbit').value
+                )
+            };
+
+            try {
+
+                const hasil = await permintaan(
+                    id ? `${api}/${id}` : api,
+                    {
+                        method: id ? 'PUT' : 'POST',
+                        body: JSON.stringify(data)
+                    }
+                );
+
+                resetForm();
+
+                await muatBuku();
+
+                tampilkanPesan(
+                    hasil.message || 'Data buku berhasil disimpan.',
+                    true
+                );
+
+            } catch (error) {
+
+                tampilkanPesan(
+                    'Gagal menyimpan buku: ' + error.message
+                );
+
+            } finally {
+
+                tombolSimpan.disabled = false;
+            }
+        });
+    }
+
+    // Menghapus Buku
+    async function hapusBuku(buku) {
+
+        if (!bolehKelolaBuku) return;
+
+        if (!confirm(
+            `Yakin ingin menghapus buku "${judulBuku(buku)}"?`
+        )) return;
+
+        try {
+
+            const hasil = await permintaan(
+                `${api}/${buku.id}`,
+                { method: 'DELETE' }
+            );
+
+            await muatBuku();
+
+            tampilkanPesan(
+                hasil.message || 'Buku berhasil dihapus.',
+                true
+            );
+
+        } catch (error) {
+
+            tampilkanPesan(
+                'Gagal menghapus buku: ' + error.message
+            );
+        }
+    }
+
+    // Mengajukan Peminjaman Buku untuk Siswa
+    async function ajukanPeminjaman(buku) {
+
+        if (!bolehPinjamBuku) return;
+
+        if (!confirm(
+            `Apakah kamu yakin ingin mengajukan peminjaman buku "${judulBuku(buku)}"?`
+        )) {
+            return;
+        }
+
+        try {
+
+            const hasil = await permintaan('/siswa/peminjaman', {
+                method: 'POST',
+                body: JSON.stringify({
+                    buku_id: buku.id
+                })
+            });
+
+            tampilkanPesan(
+                hasil.message || 'Pengajuan berhasil dikirim.',
+                true
+            );
+
+        } catch (error) {
+
+            tampilkanPesan(
+                'Pengajuan gagal: ' + error.message
+            );
+        }
+    }
+
+    // Menampilkan data buku saat halaman dibuka
+    muatBuku();
+
 });
 </script>
+
 @endsection
