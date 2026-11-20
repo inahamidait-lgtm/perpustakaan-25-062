@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rules;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Spatie\Permission\Models\Role;
 
 class RegisteredUserController extends Controller
 {
@@ -26,6 +27,10 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
+        if ($request->has('name') && ! $request->has('nama')) {
+            $request->merge(['nama' => $request->input('name')]);
+        }
+
         $request->validate([
             'nama' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:users,email'],
@@ -39,7 +44,11 @@ class RegisteredUserController extends Controller
         ]);
 
         // Memberikan role siswa secara otomatis
-        $user->assignRole('siswa');
+        $role = Role::firstOrCreate([
+            'name' => 'siswa',
+            'guard_name' => 'web',
+        ]);
+        $user->assignRole($role);
 
         event(new Registered($user));
 

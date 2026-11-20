@@ -9,19 +9,19 @@ return [
 
     'connections' => [
 
-    'supabase' => [
-    'driver' => 'pgsql',
-    'host' => env('SUPABASE_DB_HOST'),
-    'port' => env('SUPABASE_DB_PORT', '5432'),
-    'database' => env('SUPABASE_DB_DATABASE', 'postgres'),
-    'username' => env('SUPABASE_DB_USERNAME'),
-    'password' => env('SUPABASE_DB_PASSWORD'),
-    'charset' => 'utf8',
-    'prefix' => '',
-    'prefix_indexes' => true,
-    'search_path' => 'public',
-    'sslmode' => 'require',
-],
+        'supabase' => [
+            'driver' => 'pgsql',
+            'host' => env('SUPABASE_DB_HOST', env('DB_HOST')),
+            'port' => env('SUPABASE_DB_PORT', env('DB_PORT', '5432')),
+            'database' => env('SUPABASE_DB_DATABASE', env('DB_DATABASE', 'postgres')),
+            'username' => env('SUPABASE_DB_USERNAME', env('DB_USERNAME')),
+            'password' => env('SUPABASE_DB_PASSWORD', env('DB_PASSWORD')),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'prefix_indexes' => true,
+            'search_path' => 'public',
+            'sslmode' => env('DB_SSLMODE', 'require'),
+        ],
 
         'sqlite' => [
             'driver' => 'sqlite',
@@ -87,7 +87,7 @@ return [
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
-            'sslmode' => env('DB_SSLMODE', 'prefer'),
+            'sslmode' => env('DB_SSLMODE', 'require'),
             'options' => extension_loaded('pdo_pgsql') ? [
                 PDO::ATTR_EMULATE_PREPARES => true,
             ] : [],
